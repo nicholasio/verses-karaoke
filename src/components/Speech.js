@@ -26,6 +26,13 @@ function removePunctuaction(str) {
 	return str.replace(/[^\w\s]|_/g, '').replace(/\s+/g, ' ');
 }
 
+function countWords(string) {
+	let s = string.replace(/\n/g, ' '); // newlines to space
+	s = s.replace(/(^\s*)|(\s*$)/gi, ''); // remove spaces from start + end
+	s = s.replace(/[ ]{2,}/gi, ' '); // 2 or more spaces to 1
+	return s.split(' ').length;
+}
+
 class Speech extends Component {
 	constructor(props) {
 		super(props);
@@ -46,6 +53,7 @@ class Speech extends Component {
 		elapsed: 0,
 		finalTranscript: '',
 		scoreErrors: 0,
+		score: 0,
 		diffResult: '',
 		timerStart: 0, // eslint-disable-line
 		timerRunning: false, // eslint-disable-line
@@ -87,11 +95,16 @@ class Speech extends Component {
 		diff.forEach(part => {
 			const color = part.added ? 'grey' : part.removed ? 'red' : 'green'; // eslint-disable-line
 			if (color === 'red') {
-				scoreErrors += 1;
+				scoreErrors += countWords(part.value);
 			}
 			diffResult = `${diffResult} <span class="diff-${color}">${part.value}</span>`;
 		});
-		this.setState({ diffResult, scoreErrors });
+		const elapsed = Math.round(this.state.elapsed / 100);
+		const seconds = (elapsed / 10).toFixed(1);
+		const nWords = countWords(source);
+		const maxScore = nWords * 10;
+		const score = maxScore - scoreErrors / nWords * maxScore * 0.75 - seconds * 3;
+		this.setState({ diffResult, scoreErrors, score });
 	};
 	toggleRecording(evt) {
 		if (this.state.recognizing) {
@@ -252,7 +265,7 @@ class Speech extends Component {
 					</div>
 					<div className="summary">
 						<div className="timer">
-							{seconds} Segundos. Erros: {this.state.scoreErrors}
+							{seconds} Segundos. Erros: {this.state.scoreErrors} Pontuação: {this.state.score}
 						</div>
 
 						<button
