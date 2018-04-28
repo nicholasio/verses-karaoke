@@ -5,6 +5,9 @@ import removeAccents from 'remove-accents';
 import LanguageDropdown from './LanguageDropdown';
 import mic from './mic.svg';
 import stop from './stop.svg';
+import db from './db';
+import dbTravaLingua from './db-trava-lingua';
+import dbEnglish from './db-english';
 
 import './Speech.css';
 
@@ -52,11 +55,12 @@ class Speech extends Component {
 		// eslint-disable-next-line
         this.recognition = new webkitSpeechRecognition();
 
-		this.recognition.continuous = false;
+		this.recognition.continuous = true;
 		this.recognition.interimResults = true;
 
-		this.recognition.onstart = this.recognitionOnError.bind(this);
-		this.recognition.onerror = this.recognitionOnStart.bind(this);
+		this.recognition.onstart = this.recognitionOnStart.bind(this);
+		// this.recognition.onerror = this.recognitionOnError.bind(this);
+		this.recognition.onsoundend = this.recognitionOnSpeechEnd.bind(this);
 		this.recognition.onend = this.recognitionOnEnd.bind(this);
 		this.recognition.onresult = this.recognitionOnResult.bind(this);
 	}
@@ -91,10 +95,10 @@ class Speech extends Component {
 	};
 	toggleRecording(evt) {
 		if (this.state.recognizing) {
+			console.log('stopping');
 			this.setState({ recognizing: false });
 			this.recognition.stop();
 			this.stopTimer();
-			this.diffText(this.sourceText.current.value, this.state.finalTranscript);
 		} else {
 			this.setState({ recognizing: true });
 			this.recognition.lang = this.state.language;
@@ -127,14 +131,22 @@ class Speech extends Component {
 	recognitionOnError(evt) {
 		// this.setState({ recognizing: false });
 		console.log('error', evt);
+		if (evt.error === 'no-speech') {
+			this.ignore_onend = true;
+		}
+		if (evt.error === 'audio-capture') {
+			this.ignore_onend = true;
+		}
+	}
+	recognitionOnSpeechEnd() {
+		console.log('stopped');
 	}
 	recognitionOnStart() {
 		console.log('starting');
 	}
 	recognitionOnEnd() {
 		// update this
-		console.log('on end');
-		this.toggleRecording();
+		this.diffText(this.sourceText.current.value, this.state.finalTranscript);
 	}
 	recognitionOnResult(evt) {
 		if (typeof evt.results === 'undefined') {
@@ -162,8 +174,57 @@ class Speech extends Component {
 		const elapsed = Math.round(this.state.elapsed / 100);
 		const seconds = (elapsed / 10).toFixed(1);
 		const recordingIcon = '/mic-animate.gif';
+		const dbKeys = Object.keys(db);
+		const dbTravaLinguaKeys = Object.keys(dbTravaLingua);
+		const dbEnglishKeys = Object.keys(dbEnglish);
 		return (
 			<div>
+				<label htmlFor="db-pt">
+					Português:
+					<select
+						id="db-pt"
+						onChange={evt => {
+							this.sourceText.current.value = `${db[evt.target.value]} ${evt.target.value}`;
+						}}
+					>
+						{dbKeys.map(key => (
+							<option value={key} key={key}>
+								{key}
+							</option>
+						))}
+					</select>
+				</label>
+				<label htmlFor="db-en">
+					Inglês:
+					<select
+						id="db-en"
+						onChange={evt => {
+							this.sourceText.current.value = `${dbEnglish[evt.target.value]} ${evt.target.value}`;
+						}}
+					>
+						{dbEnglishKeys.map(key => (
+							<option value={key} key={key}>
+								{key}
+							</option>
+						))}
+					</select>
+				</label>
+				<label htmlFor="db-tl">
+					Trava Línguais:
+					<select
+						id="db-tl"
+						onChange={evt => {
+							this.sourceText.current.value = `${dbTravaLingua[evt.target.value]}`;
+						}}
+					>
+						{dbTravaLinguaKeys.map(key => (
+							<option value={key} key={key}>
+								{key}
+							</option>
+						))}
+					</select>
+				</label>
+
 				<div className="sourceContainer">
 					<textarea ref={this.sourceText} className="textToBeSpoken" />
 					<div className="diffResult">
