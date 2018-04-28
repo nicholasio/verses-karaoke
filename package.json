@@ -1,0 +1,47 @@
+{
+  "name": "verse-karaoke",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "babel-eslint": "^8.2.3",
+    "diff": "^3.5.0",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-loader": "^2.0.0",
+    "eslint-plugin-import": "^2.11.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-prettier": "^2.6.0",
+    "eslint-plugin-react": "^7.7.0",
+    "husky": "^0.15.0-rc.13",
+    "lint-staged": "^7.0.5",
+    "prettier": "^1.12.1",
+    "prop-types": "^15.6.1",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
+    "react-scripts": "1.1.4",
+    "remove-accents": "^0.4.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "lint": "eslint src ",
+    "format": "eslint --fix src"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "devDependencies": {
+    "eslint-plugin-babel": "^5.1.0"
+  }
+}

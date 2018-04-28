@@ -1,0 +1,77 @@
+#info {
+    font-size: 20px;
+}
+#div_start {
+    float: right;
+}
+#headline {
+    text-decoration: none
+}
+#results {
+    font-size: 14px;
+    font-weight: bold;
+    border: 1px solid #ddd;
+    padding: 15px;
+    text-align: left;
+    min-height: 150px;
+}
+#start_button {
+    border: 0;
+    background-color:transparent;
+    padding: 0;
+    margin: 10px;
+}
+.interim {
+    color: gray;
+}
+.final {
+    color: black;
+    padding-right: 3px;
+}
+.button {
+    display: none;
+}
+.marquee {
+    margin: 20px auto;
+}
+
+.languages_list {
+    margin-top: 20px;
+}
+
+.stopTimer {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.sourceContainer, .recordContainer {
+    float:left;
+    width: 100%;
+}
+.textToBeSpoken {
+    width: 47%;
+    height: 170px;
+    margin: 20px 0;
+    float: left;
+}
+
+.diffResult {
+    width: 47%;
+    float: right;
+    outline: 1px solid #ddd;
+    margin: 20px 0;
+    height: 170px;
+}
+
+.diff-green {
+    color: green;
+}
+
+.diff-red {
+    color: red;
+}
+
+.diff-grey {
+    color: grey;
+}
