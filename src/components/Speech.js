@@ -4,11 +4,11 @@ import { diffWords } from 'diff';
 import removeAccents from 'remove-accents';
 import LanguageDropdown from './LanguageDropdown';
 import mic from './mic.svg';
-import stop from './stop.svg';
 import db from './db';
 import dbTravaLingua from './db-trava-lingua';
 import dbEnglish from './db-english';
-
+import recordAudio from '../recordAudio';
+import speaker from './speaker.svg';
 import './Speech.css';
 
 function linebreak(s) {
@@ -59,7 +59,7 @@ class Speech extends Component {
 		timerRunning: false, // eslint-disable-line
 	};
 
-	componentDidMount() {
+	async componentDidMount() {
 		// eslint-disable-next-line
         this.recognition = new webkitSpeechRecognition();
 
@@ -71,6 +71,8 @@ class Speech extends Component {
 		this.recognition.onsoundend = this.recognitionOnSpeechEnd.bind(this);
 		this.recognition.onend = this.recognitionOnEnd.bind(this);
 		this.recognition.onresult = this.recognitionOnResult.bind(this);
+		this.recorder = await recordAudio();
+		this.audio = null;
 	}
 
 	componentWillUnmount() {
@@ -103,20 +105,26 @@ class Speech extends Component {
 		const seconds = (elapsed / 10).toFixed(1);
 		const nWords = countWords(source);
 		const maxScore = nWords * 10;
-		const score = maxScore - scoreErrors / nWords * maxScore * 0.75 - seconds * 3;
+		let score = maxScore - scoreErrors / nWords * maxScore - seconds * 3;
+		if (score < 0) {
+			score = 0;
+		}
+		score = (maxScore - (maxScore - score / maxScore)) * 100;
 		this.setState({ diffResult, scoreErrors, score });
 	};
-	toggleRecording(evt) {
+	async toggleRecording(evt) {
 		if (this.state.recognizing) {
 			console.log('stopping');
 			this.setState({ recognizing: false });
 			this.recognition.stop();
 			this.stopTimer();
+			this.audio = await this.recorder.stop();
 		} else {
 			this.setState({ recognizing: true });
 			this.recognition.lang = this.state.language;
 			this.recognition.start();
 			this.starTimer();
+			this.recorder.start();
 		}
 	}
 	tick() {
@@ -197,7 +205,7 @@ class Speech extends Component {
 					<select
 						id="db-pt"
 						onChange={evt => {
-							this.sourceText.current.value = `${db[evt.target.value]} ${evt.target.value}`;
+							this.sourceText.current.value = `${db[evt.target.value]}`;
 						}}
 					>
 						{dbKeys.map(key => (
@@ -212,7 +220,7 @@ class Speech extends Component {
 					<select
 						id="db-en"
 						onChange={evt => {
-							this.sourceText.current.value = `${dbEnglish[evt.target.value]} ${evt.target.value}`;
+							this.sourceText.current.value = `${dbEnglish[evt.target.value]}`;
 						}}
 					>
 						{dbEnglishKeys.map(key => (
@@ -254,6 +262,16 @@ class Speech extends Component {
 								width="30px"
 							/>
 						</button>
+						<button
+							onClick={() => {
+								if (this.audio) {
+									this.audio.play();
+								}
+							}}
+							id="listen_button"
+						>
+							<img alt="Escutar Gravação" src={speaker} width="30px" />
+						</button>
 					</div>
 					<div id="results">
 						<span className="final" id="final_span" ref={this.finalSpan}>
@@ -265,10 +283,11 @@ class Speech extends Component {
 					</div>
 					<div className="summary">
 						<div className="timer">
-							{seconds} Segundos. Erros: {this.state.scoreErrors} Pontuação: {this.state.score}
+							{seconds} Segundos. Erros: {this.state.scoreErrors} Pontuação:{' '}
+							{this.state.score.toFixed(2)}%
 						</div>
 
-						<button
+						{/* <button
 							className="stopTimer"
 							onClick={e => {
 								this.stopTimer();
@@ -276,7 +295,7 @@ class Speech extends Component {
 							href="#"
 						>
 							<img src={stop} alt="Parar" width="32px" />
-						</button>
+						</button> */}
 					</div>
 					<div className="languages_list">
 						<LanguageDropdown onChange={this.onLanguageChange} />
