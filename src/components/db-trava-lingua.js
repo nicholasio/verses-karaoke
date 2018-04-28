@@ -15,4 +15,13 @@ export default {
 		'O desinquivincavacador das caravelarias desinquivincavacaria as cavidades que deveriam ser desinquivincavacadas.',
 	Ornitorrinco:
 		'Não confunda ornitorrinco com otorrinolaringologista, ornitorrinco com ornitologista, ornitologista com otorrinolaringologista, porque ornitorrinco, é ornitorrinco, ornitologista, é ornitologista, e otorrinolaringologista é otorrinolaringologista.',
+	MeLiga:
+		'Se a liga me ligasse, eu também ligava a liga. Mas a liga não me liga, eu também não ligo a liga.',
+	QuatroQuadros:
+		'Há quatro quadros três e três quadros quatro. Sendo que quatro destes quadros são quadrados, um dos quadros quatro e três dos quadros três. Os três quadros que não são quadrados, são dois dos quadros quatro e um dos quadros três.',
+	RuaDificil:
+		'Disseram que na minha rua tem paralelepípedo feito de paralelogramos. Seis paralelogramos tem um paralelepípedo. Mil paralelepípedos tem uma paralelepipedovia. Uma paralelepipedovia tem mil paralelogramos. Então uma paralelepipedovia é uma paralelogramolândia?',
+	VemCá:
+		'Se cada um vai a casa de cada um é porque cada um quer que cada um vá lá. Porque se cada um não fosse a casa de cada um é porque cada um não queria que cada um fosse lá. ,  ',
+	Sabia: 'Sabia que a mãe do sabiá não sabia que o sabiá sabia assobiar?',
 };
