@@ -1,5 +1,6 @@
 {
   "name": "verse-karaoke",
+  "homepage": "http://nicholasandre.com.br/verses-karaoke",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

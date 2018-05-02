@@ -15,7 +15,7 @@ class App extends Component {
 					<img src={logo} className="App-logo" alt="logo" />
 					<h1 className="App-title">Karaoquê de Versículo</h1>
 					<p>
-						Desnvolvido por{' '}
+						Desenvolvido por{' '}
 						<a href="https://blog.nicholasandre.com.br/" target="_blank" rel="noopener noreferrer">
 							Nícholas André
 						</a>

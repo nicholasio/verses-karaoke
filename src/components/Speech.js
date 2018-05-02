@@ -11,7 +11,7 @@ import dbEnglish from '../data/db-english';
 import recordAudio from '../utils/recordAudio';
 import speaker from './speaker.svg';
 import './Speech.css';
-
+import recordingIcon from './mic-animate.gif';
 import { linebreak, capitalize, removePunctuaction, countWords } from '../utils/text';
 
 class Speech extends Component {
@@ -169,7 +169,6 @@ class Speech extends Component {
 	render() {
 		const elapsed = Math.round(this.state.elapsed / 100);
 		const seconds = (elapsed / 10).toFixed(1);
-		const recordingIcon = '/mic-animate.gif';
 		const ptVerses = Object.keys(db).map(i => ({ value: db[i], label: i }));
 		const travaLinguas = Object.keys(dbTravaLingua).map(i => ({
 			value: dbTravaLingua[i],
