@@ -1,5 +1,5 @@
 export default {
-	Sucesso: 'Uuma sucessão de sucessos, sucessa, sucessivamente sem cessar',
+	Sucesso: 'Uma sucessão de sucessos, sucessa, sucessivamente sem cessar',
 	Trigo: 'Um prato de trigo para três tigres',
 	Rei: 'O rato roeu a roupa do rei de roma',
 	Rua:

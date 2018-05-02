@@ -9,9 +9,16 @@
 
 .App-header {
   background-color: #222;
-  height: 150px;
+  min-height: 150px;
   padding: 20px;
   color: white;
+}
+
+.App a {
+  color: #FFF;
+}
+.App a:hover {
+  text-decoration: none;
 }
 
 .App-title {
@@ -28,6 +35,6 @@
 }
 
 .container {
-  width:60%;
+  width:90%;
   margin: 20px auto;
 }

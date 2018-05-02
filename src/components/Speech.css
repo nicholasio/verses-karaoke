@@ -8,7 +8,7 @@
     text-decoration: none
 }
 #results {
-    font-size: 14px;
+    font-size: 18px;
     font-weight: bold;
     border: 1px solid #ddd;
     padding: 15px;
@@ -49,9 +49,14 @@
     float:left;
     width: 100%;
 }
+
+.sourceContainer textarea, .recordContainer textarea{
+    font-size: 18px;
+}
+
 .textToBeSpoken {
     width: 47%;
-    height: 170px;
+    height: 150px;
     margin: 20px 0;
     float: left;
 }
@@ -61,7 +66,7 @@
     float: right;
     outline: 1px solid #ddd;
     margin: 20px 0;
-    height: 170px;
+    height: 150px;
 }
 
 .diff-green {
@@ -74,4 +79,20 @@
 
 .diff-grey {
     color: grey;
+}
+
+.sources {
+    width: 100%;
+    min-height: 30px;
+}
+.sources .Dropdown-root {
+    width: 33%;
+    float:left;
+    margin-left: 0.5%;
+}
+.sources .Dropdown-root:first-child {
+    margin-left: 0;
+}
+.summary {
+    margin-top: 10px;
 }

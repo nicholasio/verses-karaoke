@@ -2,36 +2,17 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { diffWords } from 'diff';
 import removeAccents from 'remove-accents';
-import LanguageDropdown from './LanguageDropdown';
+import Dropdown from 'react-dropdown';
+import 'react-dropdown/style.css';
 import mic from './mic.svg';
-import db from './db';
-import dbTravaLingua from './db-trava-lingua';
-import dbEnglish from './db-english';
-import recordAudio from '../recordAudio';
+import db from '../data/db';
+import dbTravaLingua from '../data/db-trava-lingua';
+import dbEnglish from '../data/db-english';
+import recordAudio from '../utils/recordAudio';
 import speaker from './speaker.svg';
 import './Speech.css';
 
-function linebreak(s) {
-	const twoLine = /\n\n/g;
-	const oneLine = /\n/g;
-	return s.replace(twoLine, '<p></p>').replace(oneLine, '<br>');
-}
-
-function capitalize(s) {
-	const firstChar = /\S/;
-	return s.replace(firstChar, m => m.toUpperCase());
-}
-
-function removePunctuaction(str) {
-	return str.replace(/[^\w\s]|_/g, '').replace(/\s+/g, ' ');
-}
-
-function countWords(string) {
-	let s = string.replace(/\n/g, ' '); // newlines to space
-	s = s.replace(/(^\s*)|(\s*$)/gi, ''); // remove spaces from start + end
-	s = s.replace(/[ ]{2,}/gi, ' '); // 2 or more spaces to 1
-	return s.split(' ').length;
-}
+import { linebreak, capitalize, removePunctuaction, countWords } from '../utils/text';
 
 class Speech extends Component {
 	constructor(props) {
@@ -41,11 +22,12 @@ class Speech extends Component {
 		this.interimSpan = React.createRef();
 		this.sourceText = React.createRef();
 
-		this.tick.bind(this);
-		this.starTimer.bind(this);
-		this.stopTimer.bind(this);
-		this.resetTimer.bind(this);
-		this.toggleRecording.bind(this);
+		this.tick = this.tick.bind(this);
+		this.starTimer = this.starTimer.bind(this);
+		this.stopTimer = this.stopTimer.bind(this);
+		this.resetTimer = this.resetTimer.bind(this);
+		this.toggleRecording = this.toggleRecording.bind(this);
+		this.dropdownOnChange = this.dropdownOnChange.bind(this);
 	}
 	state = {
 		recognizing: false,
@@ -63,12 +45,11 @@ class Speech extends Component {
 		// eslint-disable-next-line
         this.recognition = new webkitSpeechRecognition();
 
-		this.recognition.continuous = true;
+		this.recognition.continuous = false;
 		this.recognition.interimResults = true;
 
-		this.recognition.onstart = this.recognitionOnStart.bind(this);
+		// this.recognition.onstart = this.recognitionOnStart.bind(this);
 		// this.recognition.onerror = this.recognitionOnError.bind(this);
-		this.recognition.onsoundend = this.recognitionOnSpeechEnd.bind(this);
 		this.recognition.onend = this.recognitionOnEnd.bind(this);
 		this.recognition.onresult = this.recognitionOnResult.bind(this);
 		this.recorder = await recordAudio();
@@ -79,11 +60,39 @@ class Speech extends Component {
 		clearInterval(this.timer);
 	}
 
-	onLanguageChange = language => {
-		this.setState({ language });
-		console.log(`changing language to ${language}`);
+	onLanguageChange = option => {
+		this.setState({ language: option.value });
+		console.log(`changing language to ${option.value}`);
 	};
 
+	recognitionOnEnd() {
+		// if it's not a continuous recognition we need to stop recording
+		if (!this.recognition.continuous) {
+			this.toggleRecording();
+		}
+		this.diffText(this.sourceText.current.value, this.state.finalTranscript);
+	}
+	recognitionOnResult(evt) {
+		if (typeof evt.results === 'undefined') {
+			this.recognition.onend = null;
+			this.recognition.stop();
+			return;
+		}
+		let interimTranscript = '';
+		let finalTranscript = '';
+
+		for (let i = evt.resultIndex; i < evt.results.length; ++i) {
+			if (evt.results[i].isFinal) {
+				finalTranscript += evt.results[i][0].transcript;
+			} else {
+				interimTranscript += evt.results[i][0].transcript;
+			}
+		}
+		finalTranscript = capitalize(finalTranscript);
+		this.setState({ finalTranscript });
+		this.finalSpan.current.innerHTML = linebreak(finalTranscript);
+		this.interimSpan.current.innerHTML = linebreak(interimTranscript);
+	}
 	diffText = (source, target) => {
 		const diff = diffWords(
 			removePunctuaction(removeAccents(source)),
@@ -112,9 +121,9 @@ class Speech extends Component {
 		score = (maxScore - (maxScore - score / maxScore)) * 100;
 		this.setState({ diffResult, scoreErrors, score });
 	};
+
 	async toggleRecording(evt) {
 		if (this.state.recognizing) {
-			console.log('stopping');
 			this.setState({ recognizing: false });
 			this.recognition.stop();
 			this.stopTimer();
@@ -127,9 +136,11 @@ class Speech extends Component {
 			this.recorder.start();
 		}
 	}
+
 	tick() {
 		this.setState(({ elapsed, timerStart }) => ({ elapsed: new Date() - timerStart }));
 	}
+
 	starTimer() {
 		this.setState(
 			({ timerStart }) => ({ timerStart: Date.now(), timerRunning: true }),
@@ -138,6 +149,7 @@ class Speech extends Component {
 			},
 		);
 	}
+
 	stopTimer() {
 		this.setState(
 			({ timerStart }) => ({ timerRunning: false }),
@@ -146,105 +158,47 @@ class Speech extends Component {
 			},
 		);
 	}
+
 	resetTimer() {
 		this.setState(({ timerStart }) => ({ timerStart: 0, timerRunning: false }));
 	}
-	recognitionOnError(evt) {
-		// this.setState({ recognizing: false });
-		console.log('error', evt);
-		if (evt.error === 'no-speech') {
-			this.ignore_onend = true;
-		}
-		if (evt.error === 'audio-capture') {
-			this.ignore_onend = true;
-		}
-	}
-	recognitionOnSpeechEnd() {
-		console.log('stopped');
-	}
-	recognitionOnStart() {
-		console.log('starting');
-	}
-	recognitionOnEnd() {
-		// update this
-		this.diffText(this.sourceText.current.value, this.state.finalTranscript);
-	}
-	recognitionOnResult(evt) {
-		if (typeof evt.results === 'undefined') {
-			this.recognition.onend = null;
-			this.recognition.stop();
-			return;
-		}
-		let interimTranscript = '';
-		let finalTranscript = '';
 
-		for (let i = evt.resultIndex; i < evt.results.length; ++i) {
-			if (evt.results[i].isFinal) {
-				finalTranscript += evt.results[i][0].transcript;
-			} else {
-				interimTranscript += evt.results[i][0].transcript;
-			}
-		}
-		finalTranscript = capitalize(finalTranscript);
-		this.setState({ finalTranscript });
-		this.finalSpan.current.innerHTML = linebreak(finalTranscript);
-		this.interimSpan.current.innerHTML = linebreak(interimTranscript);
+	dropdownOnChange(option) {
+		this.sourceText.current.value = option.value;
 	}
-
 	render() {
 		const elapsed = Math.round(this.state.elapsed / 100);
 		const seconds = (elapsed / 10).toFixed(1);
 		const recordingIcon = '/mic-animate.gif';
-		const dbKeys = Object.keys(db);
-		const dbTravaLinguaKeys = Object.keys(dbTravaLingua);
-		const dbEnglishKeys = Object.keys(dbEnglish);
+		const ptVerses = Object.keys(db).map(i => ({ value: db[i], label: i }));
+		const travaLinguas = Object.keys(dbTravaLingua).map(i => ({
+			value: dbTravaLingua[i],
+			label: i,
+		}));
+		const enVerses = Object.keys(dbEnglish).map(i => ({
+			value: dbEnglish[i],
+			label: i,
+		}));
+		const languages = [{ value: 'pt-BR', label: 'Português' }, { value: 'en-US', label: 'Inglês' }];
 		return (
 			<div>
-				<label htmlFor="db-pt">
-					Português:
-					<select
-						id="db-pt"
-						onChange={evt => {
-							this.sourceText.current.value = `${db[evt.target.value]}`;
-						}}
-					>
-						{dbKeys.map(key => (
-							<option value={key} key={key}>
-								{key}
-							</option>
-						))}
-					</select>
-				</label>
-				<label htmlFor="db-en">
-					Inglês:
-					<select
-						id="db-en"
-						onChange={evt => {
-							this.sourceText.current.value = `${dbEnglish[evt.target.value]}`;
-						}}
-					>
-						{dbEnglishKeys.map(key => (
-							<option value={key} key={key}>
-								{key}
-							</option>
-						))}
-					</select>
-				</label>
-				<label htmlFor="db-tl">
-					Trava Línguais:
-					<select
-						id="db-tl"
-						onChange={evt => {
-							this.sourceText.current.value = `${dbTravaLingua[evt.target.value]}`;
-						}}
-					>
-						{dbTravaLinguaKeys.map(key => (
-							<option value={key} key={key}>
-								{key}
-							</option>
-						))}
-					</select>
-				</label>
+				<div className="sources">
+					<Dropdown
+						options={ptVerses}
+						placeholder="Selecione um Versísulo em Português"
+						onChange={this.dropdownOnChange}
+					/>
+					<Dropdown
+						options={enVerses}
+						placeholder="Ou Selecione um Versísulo em Inglês"
+						onChange={this.dropdownOnChange}
+					/>
+					<Dropdown
+						options={travaLinguas}
+						placeholder="Ou Selecione um Trava Língua"
+						onChange={this.dropdownOnChange}
+					/>
+				</div>
 
 				<div className="sourceContainer">
 					<textarea ref={this.sourceText} className="textToBeSpoken" />
@@ -283,23 +237,31 @@ class Speech extends Component {
 					</div>
 					<div className="summary">
 						<div className="timer">
-							{seconds} Segundos. Erros: {this.state.scoreErrors} Pontuação:{' '}
+							{seconds} Segundos. Erros: {this.state.scoreErrors} Pontuação:
 							{this.state.score.toFixed(2)}%
 						</div>
-
-						{/* <button
-							className="stopTimer"
-							onClick={e => {
-								this.stopTimer();
-							}}
-							href="#"
-						>
-							<img src={stop} alt="Parar" width="32px" />
-						</button> */}
 					</div>
 					<div className="languages_list">
-						<LanguageDropdown onChange={this.onLanguageChange} />
+						<label htmlFor="mode">
+							<input
+								id="mode"
+								type="checkbox"
+								onClick={() => {
+									this.recognition.continuous = !this.recognition.continuous;
+								}}
+							/>
+							Modo Contínuo *
+						</label>
+						<Dropdown
+							options={languages}
+							onChange={this.onLanguageChange}
+							placeholder="Seleciona o Idioma"
+						/>
 					</div>
+					<p>
+						* Ative este modo para parar o reconhecimento manualmente (clicando no microfone), útil
+						para quando o reconhecimento para prematuramente
+					</p>
 				</div>
 			</div>
 		);
